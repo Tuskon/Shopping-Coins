@@ -5,6 +5,8 @@ import { Button } from '@rneui/themed';
 import { TextInput } from 'react-native-paper';
 import { StackTypes } from '@/app/StackNavigation';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import Styles from './styles';
 
 export default function SignUp() {
   const { height, width } = Dimensions.get('window');
@@ -12,6 +14,7 @@ export default function SignUp() {
   const [secureText, setSecureText] = useState(true);
   const [icon, setIcon] = useState('eye');
   const [secureText2, setSecureText2] = useState(true);
+  const styles = Styles(height, width);
   const [icon2, setIcon2] = useState('eye');
 
   const togglePasswordVisibility = (num: number) => {
@@ -27,76 +30,7 @@ export default function SignUp() {
   const handleMarket = () => {
     navigation.navigate('MainTabs', { screen: 'Market' });
   };
-
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: '#F9F9F9'
-    },
-    shoppingCoins_view: {
-      backgroundColor: '#7B22D3',
-      alignItems: 'center',
-      justifyContent: 'flex-start',
-      width: '100%'
-    },
-    image_view: {
-      width: '100%',
-      height: height * 0.25,
-      alignItems: 'center',
-      marginTop: height * 0.04
-    },
-    login_view: {
-      position: 'relative',
-      backgroundColor: '#F9F9F9',
-      borderRadius: 20,
-      bottom: height * 0.075,
-      width: '100%',
-      height: '100%',
-    },
-    forms_view: {
-      borderTopLeftRadius: 20,
-      borderTopRightRadius: 20,
-      width: width,
-      alignItems: 'center',
-      backgroundColor: '#F9F9F9'
-    },
-    Login_text: {
-      marginTop: height * 0.02,
-      marginBottom: height * 0.02,
-      fontSize: 30,
-      fontWeight: 'bold',
-      color: '#313131',
-      textAlign: 'center'
-    },
-    form_input: {
-      borderRadius: 10,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
-      shadowRadius: 2,
-      elevation: 9,
-      width: width * 0.9,
-      height: height * 0.08,
-      backgroundColor: 'white',
-      marginBottom: 15
-    },
-    links_view: {
-      marginTop: height * 0.02,
-      marginBottom: height * 0.02,
-      flexDirection: 'row',
-      justifyContent: 'space-evenly',
-      width: '100%'
-    },
-    links_text: {
-      color: '#9B9B9B',
-      fontSize: 15
-    },
-    shopping_img: {
-      width: width * 0.8,
-      height: height * 0.20
-    }
-  });
-
+  
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView

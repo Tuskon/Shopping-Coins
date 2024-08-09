@@ -1,16 +1,30 @@
 import React, { useRef, useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, SafeAreaView, KeyboardAvoidingView, Platform, Image } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, SafeAreaView, KeyboardAvoidingView, Platform, Pressable, Image } from 'react-native';
 import { useNavigation } from "@react-navigation/native";
 import { Button } from '@rneui/themed';
 import { TextInput } from 'react-native-paper';
 import { StackTypes } from '@/app/StackNavigation';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Styles from './styles';
 
 export default function Login() {
   const { height, width } = Dimensions.get('window');
   const navigation = useNavigation<StackTypes>();
   const [secureText, setSecureText] = React.useState(true);
   const [icon, setIcon] = React.useState('eye');
+  const styles = Styles(height, width);
+  const scale = useSharedValue(1);
+  const scale2 = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const animatedStyle2 = useAnimatedStyle(() => ({
+    transform: [{ scale: scale2.value }],
+  }));
+
 
   const togglePasswordVisibility = () => {
     setSecureText(!secureText);
@@ -20,93 +34,6 @@ export default function Login() {
   const handleSignUp = async () => {
     navigation.navigate('SignUp');
   };
-
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: 'white'
-    },
-    shoppingCoins_view: {
-      backgroundColor: '#7B22D3',
-      alignItems: 'center',
-      justifyContent: 'flex-start',
-      height: height,
-      width: '100%'
-    },
-    image_view: {
-      width: '100%',
-      height: height * 0.4,
-      alignItems: 'center',
-      marginTop: height * 0.04
-    },
-    login_view: {
-      position: 'absolute',
-      backgroundColor: '#F9F9F9',
-      alignItems: 'center',
-      borderRadius: 20,
-      justifyContent: 'flex-start',
-      marginTop: height * 0.31,
-      height: height,
-      width: '100%',
-
-    },
-    forms_view: {
-      alignItems: 'center',
-      justifyContent: 'space-evenly',
-      width: '100%',
-      flexDirection: 'column',
-      height: height * 0.5,
-      marginTop: height * 0.02
-    },
-    input_view: {
-      flexDirection: 'column',
-      justifyContent: 'space-evenly',
-      height: height * 0.15,
-      width: width * 0.9,
-
-    },
-    links_view: {
-      marginTop: height * 0.04,
-      flexDirection: 'row',
-      justifyContent: 'space-evenly'
-
-    },
-    Login_text: {
-      fontSize: 30,
-      fontWeight: 'bold',
-      color: '#313131'
-    },
-    input_text: {
-      backgroundColor: '#E8E8E8',
-      width: width * 0.9,
-      height: 45,
-      borderRadius: 5,
-      borderWidth: 0.5
-    },
-    links_text: {
-      color: '#9B9B9B',
-      fontSize: 15
-
-    },
-    form_input: {
-      borderRadius: 10,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
-      shadowRadius: 2,
-      elevation: 9,
-      width: width * 0.9, 
-      height: height * 0.08, 
-      backgroundColor: 'white', 
-      marginBottom: 15 
-    },
-    shopping_img: {
-      width: width * 0.8,
-      height: height * 0.20
-    }
-  });
 
   return (
     <SafeAreaView style={styles.container}>
@@ -118,7 +45,7 @@ export default function Login() {
 
 
           <View style={styles.login_view}>
-           <View style={styles.forms_view}>
+            <View style={styles.forms_view}>
 
               <Text style={styles.Login_text}>Login</Text>
 
@@ -162,9 +89,34 @@ export default function Login() {
 
 
               <View style={styles.links_view}>
-                <Text style={styles.links_text}>Registrar-se </Text>
-                <Text style={styles.links_text}>|</Text>
-                <Text style={styles.links_text}> Resetar senha</Text>
+                <Animated.View style={animatedStyle}>
+                  <Pressable
+                    onPressIn={() => {
+                      scale.value = withSpring(0.85);
+                    }}
+                    onPressOut={() => {
+                      scale.value = withSpring(1);
+                    }}
+                  >
+                    <Text style={styles.links_text}>Registrar-se</Text>
+                  </Pressable>
+                </Animated.View>
+
+                <Text style={styles.links_text}> | </Text>
+
+                <Animated.View style={animatedStyle2}>
+                  <Pressable
+                    onPressIn={() => {
+                      scale2.value = withSpring(0.85);
+                    }}
+                    onPressOut={() => {
+                      scale2.value = withSpring(1);
+                    }}
+                  >
+                    <Text style={styles.links_text}>Resetar senha </Text>
+                  </Pressable>
+                </Animated.View>
+
               </View>
             </View>
           </View>
