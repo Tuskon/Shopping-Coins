@@ -1,0 +1,46 @@
+Bem-vindo ao projeto Shopping Coins👋
+
+Vamos começar a rodar o projeto
+Antes de começarmos, você precisará ter o Node.js e o SDK do Android instalados na sua máquina, um servidor Apache rodando, o aplicativo Expo instalado no seu smartphone ou dispositivo virtual e um gerenciador de banco de dados SQL.
+
+----------------------------------------------------------------------------------------------------
+Instale as dependências
+
+npm install
+----------------------------------------------------------------------------------------------------
+
+----------------------------------------------------------------------------------------------------
+Instale as dependências na pasta do api e inicie o banco de dados
+
+cd api
+npm install
+npx sequelize-cli db:create
+npx sequelize-cli db:migrate
+npx sequelize-cli db:seed:all 
+----------------------------------------------------------------------------------------------------
+
+----------------------------------------------------------------------------------------------------
+Vá até o arquivo config.js no caminho "api/config" e coloque seu IP local no campo "urlRootRoute".
+
+cd api/config
+----------------------------------------------------------------------------------------------------
+
+----------------------------------------------------------------------------------------------------
+Inicie a api
+
+npm start
+----------------------------------------------------------------------------------------------------
+
+----------------------------------------------------------------------------------------------------
+Inicie o aplicativo
+
+npx expo start
+----------------------------------------------------------------------------------------------------
+
+Depois de seguir todos esses passos e iniciar o aplicativo, é isso! Agora aproveite o app.
+
+Expo na Play Store: https://play.google.com/store/apps/details?id=host.exp.exponent&hl=pt_BR&pli=1
+
+Laragon: https://laragon.org/download/ (Com o Laragon, você pode usar o servidor Apache e o HeidiSQL)
+
+Android Studio: https://developer.android.com/studio?hl=pt-br

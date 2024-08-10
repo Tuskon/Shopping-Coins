@@ -86,7 +86,7 @@ const Styles = (height: number, width: number) => StyleSheet.create({
         borderRadius: 20,
         flexDirection: 'row',
         justifyContent: 'space-evenly',
-        marginHorizontal: 10, // Espaço entre os cards
+        marginHorizontal: 10, 
       },
       trip_card_img_view: {
         alignItems: 'center',
@@ -214,6 +214,10 @@ const Styles = (height: number, width: number) => StyleSheet.create({
         width: 161,
         height: 131
       },
+      shop_button:{
+        flexDirection:'row', 
+        alignItems:'center'
+      }
   
 });
 

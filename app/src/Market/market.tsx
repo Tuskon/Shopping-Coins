@@ -1,36 +1,137 @@
-import React, { useRef, useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, SafeAreaView, KeyboardAvoidingView, Platform, Image, FlatList, ListRenderItem, Pressable } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text,Dimensions, SafeAreaView, KeyboardAvoidingView, Platform, Image, FlatList, ListRenderItem, Pressable, LogBox, ToastAndroid } from 'react-native';
 import { useNavigation } from "@react-navigation/native";
 import { Button } from '@rneui/themed';
-import { TextInput } from 'react-native-paper';
 import { StackTypes } from '@/app/StackNavigation';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { ScrollView } from 'react-native-gesture-handler';
+import { useIsFocused } from "@react-navigation/native";
+import config from "../../../api/config/config"
 import { productData } from './productData';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import Styles from './styles';
+import axios from 'axios';
+import { getUserData,getEmail, addPurchaseToHistory } from '@/Session';
+import * as Notifications from 'expo-notifications';
+
+LogBox.ignoreLogs(['Warning: ...']);
+LogBox.ignoreAllLogs();
 
 export default function Market() {
   const { height, width } = Dimensions.get('window');
   const navigation = useNavigation<StackTypes>();
-  const [secureText, setSecureText] = React.useState(true);
-  const [icon, setIcon] = React.useState('eye');
+  const [nome, setNome] = useState('');
+  const [load, setLoad] = React.useState(false);
+  const [saldo, setSaldo] = useState('');
+  const [produto_db, setProduto] = useState<Products[]>([]);
   const styles = Styles(height, width);
-  const scale = useSharedValue(1);
-  const scale2 = useSharedValue(1);
+  const isFocused = useIsFocused();
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
 
-  const animatedStyle2 = useAnimatedStyle(() => ({
-    transform: [{ scale: scale2.value }],
-  }));
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const savedEmail = await getEmail();
+        if (!savedEmail) return;
+
+        const userData = await getUserData(savedEmail);
+        if (userData) {
+          setNome(userData.firstName);
+
+          try {
+            const response = await axios.get(`${config.urlRootRoute}/usuarios/Saldo`, {
+              params: { email: savedEmail }
+            });
+
+            if (response.data && response.data.saldo) {
+              const formattedSaldo = new Intl.NumberFormat('pt-BR', { style: 'decimal', minimumFractionDigits: 0 }).format(response.data.saldo);
+              setSaldo(formattedSaldo);
+            }
+          } catch (error) {
+            console.error('Erro ao fazer a requisição:', error);
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao buscar dados do usuário:', error);
+      }
+    };
+
+    if (isFocused) {
+      fetchUserData();
+    }
+  }, [isFocused]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get(`${config.urlRootRoute}/produtos/FindAll`);
+
+        setProduto(response.data);
+
+      } catch (error) {
+        console.error('Erro ao buscar produtos:', error);
+      }
+    }
+
+    fetchProducts();
+  }, [saldo, isFocused]);
 
   const handleMarket_Cart = async () => {
     navigation.navigate('MainTabs', { screen: 'Market_Cart' });
   };
+
+  const getImageSource = (type: number) => {
+    const product = productData.find((item) => item.type === type);
+    return product ? product.image : require('../../assets/Account.png');
+  };
+
+  async function handleCompra(nome: string, valor: number, quant: number) {
+    try {
+      const savedEmail = await getEmail();
+      if (savedEmail === null) {
+        throw new Error('Email não encontrado');
+      }
+  
+      const response = await axios.get(`${config.urlRootRoute}/usuarios/Saldo`, {
+        params: { email: savedEmail }
+      });
+  
+      const saldoNum = parseInt(response.data.saldo);
+  
+      let novoSaldo = saldoNum - valor;
+  
+      await axios.put(`${config.urlRootRoute}/usuarios/UpdateSaldo`, {
+        email: savedEmail,
+        saldo: novoSaldo,
+      });
+  
+      const formattedSaldo = new Intl.NumberFormat('pt-BR', {
+        style: 'decimal',
+        minimumFractionDigits: 0,
+      }).format(novoSaldo);
+      setSaldo(formattedSaldo);
+  
+      let novaQuantidade = quant - 1;
+      await axios.put(`${config.urlRootRoute}/produtos/UpdateQuantidade`, {
+        nome: nome,
+        quantidade: novaQuantidade,
+      });
+  
+  
+      await addPurchaseToHistory(savedEmail, nome, valor);
+  
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: 'Compra Confirmada 🎉',
+          body: `Você comprou ${nome} por ${valor}. Saldo restante: ${novoSaldo}.`,
+        },
+        trigger: null,
+      });
+  
+    } catch (error) {
+      console.error('Erro ao processar a compra:', error);
+    }
+  }
+
 
   interface TripItem {
     id: number;
@@ -39,6 +140,16 @@ export default function Market() {
     local: string;
     way: string;
     points: string;
+  }
+
+  interface Products {
+
+    id: number
+    nome: string;
+    preco: number;
+    quantidade: number;
+    type: number;
+
   }
 
   const tripData = [
@@ -69,7 +180,6 @@ export default function Market() {
     },
   ];
 
-  type ItemProps = { title: string };
 
   const renderTripItem: ListRenderItem<TripItem> = ({ item }) => (
     <View style={styles.trip_card_view}>
@@ -92,12 +202,12 @@ export default function Market() {
           <View style={styles.top_view}>
             <View style={styles.top_components_right_view}>
               <Image source={require('../../assets/Account.png')} style={styles.account_img} />
-              <Text style={styles.top_text}>Olá, <Text style={styles.top_text_bold}>Mary</Text></Text>
+              <Text style={styles.top_text}>Olá, <Text style={styles.top_text_bold}>{nome}</Text></Text>
             </View>
             <View style={styles.top_components_left_view}>
               <Button
                 title="Shopping Coins"
-                
+                onPress={()=>ToastAndroid.show('Aguarde a próxima versão', ToastAndroid.SHORT)}
                 buttonStyle={{
                   backgroundColor: 'black',
                   borderWidth: 2,
@@ -111,7 +221,9 @@ export default function Market() {
                 }}
                 titleStyle={{ fontSize: 14, color: 'white' }}
               />
+              <Pressable onPress={()=>ToastAndroid.show('Aguarde a próxima versão', ToastAndroid.SHORT)}>
               <Ionicons name="notifications-sharp" size={29} color="white" />
+              </Pressable>
             </View>
           </View>
 
@@ -119,11 +231,13 @@ export default function Market() {
             <View style={styles.lc_view}>
               <View style={styles.lc_points_view}>
                 <Ionicons name="wallet-outline" size={32} color="#7B22D3" />
-                <Text style={styles.lc_text}>Lc <Text style={styles.lc_bold_text}>5.000.000</Text></Text>
+                <Text style={styles.lc_text}>Lc <Text style={styles.lc_bold_text}>{saldo}</Text></Text>
               </View>
               <View style={styles.lc_shop_view}>
-                <Ionicons name="bag-handle-sharp" size={32} color="#7B22D3" />
-                <Text style={styles.lc_text}> Shop</Text>
+                <Pressable style={styles.shop_button} onPress={handleMarket_Cart}>
+                  <Ionicons name="bag-handle-sharp" size={32} color="#7B22D3" />
+                  <Text style={styles.lc_text}> Shop</Text>
+                </Pressable>
               </View>
             </View>
 
@@ -139,38 +253,39 @@ export default function Market() {
 
             <View style={styles.products_view}>
 
-              {productData.map((product) => (
+              {produto_db.slice(0, 2).map((product) => (
                 <View key={product.id} style={styles.product_card_view}>
                   <View style={styles.product_img_view}>
                     <Image
-                      source={product.image}
+                      source={getImageSource(product.type)}
                       style={{ width: width * 0.4, height: height * 0.14 }}
                     />
                   </View>
 
                   <View style={styles.product_description_view}>
-
                     <View style={styles.product_description_name_view}>
-                      <Text style={styles.product_name_text}>{product.name}</Text>
-                      <Text style={styles.product_quant_text}>{product.quant} unidades</Text>
+                      <Text style={styles.product_name_text}>{product.nome}</Text>
+                      <Text style={styles.product_quant_text}>{product.quantidade} unidades</Text>
                     </View>
 
                     <View style={styles.product_description_lc_view}>
-
                       <View style={styles.product_inner_lc_view}>
                         <Text style={styles.product_lc_text}>Lc</Text>
-                        <Text style={styles.product_lc_bold_text}>{product.lc.toFixed(2)}</Text>
+                        <Text style={styles.product_lc_bold_text}>{product.preco.toFixed(2)}</Text>
                       </View>
 
                       <View style={styles.product_inner_button_view}>
                         <Button
+                          loading={load}
+                          disabled={load}
+                          onPress={() => handleCompra(product.nome, product.preco, product.quantidade)}
                           icon={{
                             name: 'shopping-cart',
                             type: 'font-awesome',
                             size: 22,
                             color: 'white',
                           }}
-                           // Certifique-se de que handleSignUp está definido
+
                           buttonStyle={{
                             backgroundColor: '#7B22D3',
                             borderRadius: 10,
@@ -185,16 +300,14 @@ export default function Market() {
                           }}
                         />
                       </View>
-
                     </View>
-
                   </View>
                 </View>
               ))}
             </View>
 
             <View style={styles.bottom_view}>
-            <Button
+              <Button
                 title="Ver todos os produtos"
                 onPress={handleMarket_Cart}
                 buttonStyle={{

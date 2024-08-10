@@ -1,50 +1,50 @@
-# Welcome to your Expo app 👋
+# Welcome to the project Shopping Coins👋
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Let's start run the project
 
-## Get started
+Before we begin, you will need to have Node.js and Android SKD installed on your machine, have an Apache server running, have the Expo application installed at your smartphone or on your virtual device and a SQL database manager
 
 1. Install dependencies
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-    npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. Install dependencies on the api folder and start the database
+   
+```bash
 
-## Learn more
+cd api
+npm install
+npx sequelize-cli db:create
+npx sequelize-cli db:migrate
+npx sequelize-cli db:seed:all 
 
-To learn more about developing your project with Expo, look at the following resources:
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+3. Got to the config.js on the path "api/config" and put your local ip on the "urlRootRoute"
 
-## Join the community
+```bash
+cd api/config
+```
 
-Join our community of developers creating universal apps.
+4. Start the api 
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+npm start
+```
+
+5. Start the app
+
+```bash
+npx expo start
+```
+
+After all these steps and you start running the app. That's it, enjoy the app now
+
+
+## Expo Playstore: https://play.google.com/store/apps/details?id=host.exp.exponent&hl=pt_BR&pli=1
+
+## Laragon: https://laragon.org/download/  ( Whit the laragon you can use te apache sever and the heidisql ) 
+
+## Android Studio: https://developer.android.com/studio?hl=pt-br
